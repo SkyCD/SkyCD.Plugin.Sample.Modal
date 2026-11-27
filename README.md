@@ -9,3 +9,5 @@ To build from source, install the .NET 10 SDK and configure the SkyCD GitHub Pac
 The marketplace reads plugins.json and the anonymous NuGet v3 package feed under feed/. For each release, build the package with a new version, add the lowercase package file under feed/packages/<id>/<version>/, and update the package version index and publisher manifest together. Keep previously published versions available.
 
 Licensed under BSD-2-Clause. See LICENSE.
+
+After the feed update merges, tag that commit with the package version prefixed by `v`. GitHub Actions verifies the build, publishes the same package to GitHub Packages, and attaches it to a GitHub release. To mirror an existing tagged version, run the **Plugin NuGet** workflow with that version.

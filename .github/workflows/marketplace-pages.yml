@@ -21,7 +21,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    uses: SkyCD/marketplace-feed-action/.github/workflows/publish.yml@v1
+    uses: SkyCD/marketplace-feed-action/.github/workflows/publish.yml@v1.1.0
     with:
       publish: true
       display-name: Sample Modal

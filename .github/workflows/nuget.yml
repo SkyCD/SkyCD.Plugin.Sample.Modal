@@ -36,11 +36,12 @@ jobs:
       - run: dotnet restore --locked-mode
       - run: dotnet format --verify-no-changes --no-restore --verbosity minimal
       - run: dotnet pack --configuration Release --no-restore --output artifacts
-      - name: Validate and select the marketplace package
+      - name: Validate the tag and select the release package
         if: github.ref_type == 'tag' || inputs.version != ''
         shell: pwsh
         env:
           PUBLISH_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git merge-base --is-ancestor HEAD origin/main
           if ($LASTEXITCODE) { throw 'Release tags must point to a commit on main.' }
@@ -51,17 +52,12 @@ jobs:
           $tag = if ($env:PUBLISH_VERSION) { "v$env:PUBLISH_VERSION" } else { $env:GITHUB_REF_NAME }
           if ($tag -ne "v$version") { throw "Tag $tag does not match project version $version." }
 
-          $manifest = Get-Content plugins.json -Raw | ConvertFrom-Json
-          $package = $manifest.packages | Where-Object id -EQ $env:PLUGIN_ID
-          if ($version -notin $package.releases.version) { throw 'The publisher manifest does not list the release.' }
-
-          $id = $env:PLUGIN_ID.ToLowerInvariant()
-          $feedPath = "feed/packages/$id"
-          $index = Get-Content "$feedPath/index.json" -Raw | ConvertFrom-Json
-          if ($version -notin $index.versions) { throw 'The feed index does not list the release.' }
-
+          $file = "$env:PLUGIN_ID.$version.nupkg"
           New-Item -ItemType Directory publish | Out-Null
-          Copy-Item -LiteralPath "$feedPath/$version/$id.$version.nupkg" -Destination "publish/$env:PLUGIN_ID.$version.nupkg"
+          gh release download $tag --pattern $file --dir publish 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            Copy-Item -LiteralPath "artifacts/$file" -Destination "publish/$file"
+          }
       - uses: actions/upload-artifact@v7
         if: github.ref_type == 'tag' || inputs.version != ''
         with:
@@ -92,6 +88,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="$GITHUB_REF_NAME"
           if [ -n "$PUBLISH_VERSION" ]; then
@@ -99,4 +96,11 @@ jobs:
           fi
           if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release create "$tag" publish/*.nupkg --repo "$GITHUB_REPOSITORY" --verify-tag --title "$tag" --generate-notes
+          else
+            for package in publish/*.nupkg; do
+              name="${package##*/}"
+              if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | grep -Fxq "$name"; then
+                gh release upload "$tag" "$package" --repo "$GITHUB_REPOSITORY"
+              fi
+            done
           fi

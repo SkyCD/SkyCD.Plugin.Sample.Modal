@@ -1,0 +1,49 @@
+name: Publish marketplace feed
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/marketplace-feed.py', '.github/workflows/marketplace-pages.yml']
+  release:
+    types: [published]
+  workflow_run:
+    workflows: ['Plugin NuGet']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketplace-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.event == 'workflow_dispatch' || startsWith(github.event.workflow_run.head_branch, 'v')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/configure-pages@v5
+        id: pages
+      - name: Generate marketplace and NuGet metadata
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAGES_URL: ${{ steps.pages.outputs.base_url }}
+          HOST_RANGE: '{"minHostVersion":"3.0.0"}'
+        run: python3 .github/marketplace-feed.py
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - uses: actions/deploy-pages@v4
+        id: deployment

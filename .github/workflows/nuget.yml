@@ -57,6 +57,7 @@ jobs:
           gh release download $tag --pattern $file --dir publish 2>$null
           if ($LASTEXITCODE -ne 0) {
             Copy-Item -LiteralPath "artifacts/$file" -Destination "publish/$file"
+            exit 0
           }
       - uses: actions/upload-artifact@v7
         if: github.ref_type == 'tag' || inputs.version != ''
@@ -88,7 +89,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_VERSION: ${{ inputs.version }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="$GITHUB_REF_NAME"
           if [ -n "$PUBLISH_VERSION" ]; then

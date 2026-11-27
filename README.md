@@ -15,6 +15,16 @@ dotnet pack src/SkyCD.Plugin.Sample.Modal/SkyCD.Plugin.Sample.Modal.csproj -c Re
 
 Licensed under BSD-2-Clause. See LICENSE.
 
+## Host integration tests
+
+The **SkyCD host integration** workflow runs on pull requests and can also be started from the Actions tab. It builds this checkout and runs the corresponding SkyCD host tests.
+
+To run locally, check out SkyCD beside this repository at the revision pinned in `.github/workflows/host-integration.yml`. From this repository:
+
+```sh
+pwsh -File ../SkyCD/tools/scripts/ci/test-standalone-plugin.ps1 -PluginProject src/SkyCD.Plugin.Sample.Modal/SkyCD.Plugin.Sample.Modal.csproj
+```
+
 ## Releases
 
 After a version bump merges, tag the commit with the package version prefixed by `v`. GitHub Actions builds the package, publishes it to GitHub Packages, and attaches it to the GitHub Release. The Pages workflow regenerates the marketplace manifest and the NuGet registration feed from published releases.

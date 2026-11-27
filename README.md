@@ -4,7 +4,7 @@ Demonstrates a blocking confirm-export modal with typed input and output contrac
 
 Install the sample from **Options → Plugins → Browse** in SkyCD 3.0 or later. Restart SkyCD after staging the installation.
 
-To build from source, install the .NET 10 SDK and configure the SkyCD GitHub Packages source with a credential that has read:packages access. Run dotnet restore --locked-mode, then dotnet pack -c Release --no-restore. The [SkyCD SDK](https://github.com/SkyCD/SkyCD.SDK) defines the plugin contracts.
+To build from source, install the .NET 10 SDK and configure the SkyCD GitHub Packages source with a credential that has `read:packages` access. The [SkyCD SDK](https://github.com/SkyCD/SkyCD.SDK) defines the plugin contracts.
 
 The project and its assets live under `src/SkyCD.Plugin.Sample.Modal/`.
 
@@ -12,7 +12,6 @@ The project and its assets live under `src/SkyCD.Plugin.Sample.Modal/`.
 dotnet restore src/SkyCD.Plugin.Sample.Modal/SkyCD.Plugin.Sample.Modal.csproj --locked-mode
 dotnet pack src/SkyCD.Plugin.Sample.Modal/SkyCD.Plugin.Sample.Modal.csproj -c Release --no-restore
 ```
-
 
 Licensed under BSD-2-Clause. See LICENSE.
 

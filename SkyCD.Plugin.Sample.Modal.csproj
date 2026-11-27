@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="SkyCD.SDK" Version="[$(SkyCdSdkVersion)]" PrivateAssets="all"/>
+    </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Version>1.0.0</Version>
+        <RepositoryUrl>https://github.com/SkyCD/SkyCD.Plugin.Sample.Modal</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/SkyCD/SkyCD.Plugin.Sample.Modal</PackageProjectUrl>
+        <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Company>SkyCD</Company>
+        <Authors>SkyCD</Authors>
+        <AssemblyTitle>Sample Modal</AssemblyTitle>
+        <Description>Demonstrates a blocking confirm-export modal with typed input and output contracts.</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <AssemblyMetadata Include="AuthorUrl" Value="https://sourceforge.net/projects/skycd/"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="LICENSE;README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
+</Project>
+

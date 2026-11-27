@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "publisher": "SkyCD",
+  "feed": "https://raw.githubusercontent.com/SkyCD/SkyCD.Plugin.Sample.Modal/main/feed/index.json",
+  "packages": [
+    {
+      "projectUrl": "https://github.com/SkyCD/SkyCD.Plugin.Sample.Modal",
+      "id": "SkyCD.Plugin.Sample.Modal",
+      "displayName": "Sample Modal",
+      "releases": [
+        {
+          "version": "1.0.0",
+          "minHostVersion": "3.0.0"
+        }
+      ],
+      "license": "BSD-2-Clause",
+      "summary": "Demonstrates a blocking confirm-export modal with typed input and output contracts."
+    }
+  ],
+  "projectUrl": "https://github.com/SkyCD/SkyCD.Plugin.Sample.Modal"
+}

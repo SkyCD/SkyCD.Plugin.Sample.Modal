@@ -33,9 +33,18 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-      - run: dotnet restore --locked-mode
-      - run: dotnet format --verify-no-changes --no-restore --verbosity minimal
-      - run: dotnet pack --configuration Release --no-restore --output artifacts
+      - name: Locate the plugin project
+        shell: pwsh
+        run: |
+          $project = "src/$env:PLUGIN_ID/$env:PLUGIN_ID.csproj"
+          if (-not (Test-Path -LiteralPath $project)) {
+            $project = "$env:PLUGIN_ID.csproj"
+          }
+          if (-not (Test-Path -LiteralPath $project)) { throw "Plugin project not found: $project" }
+          "PLUGIN_PROJECT=$project" >> $env:GITHUB_ENV
+      - run: dotnet restore "$PLUGIN_PROJECT" --locked-mode
+      - run: dotnet format "$PLUGIN_PROJECT" --verify-no-changes --no-restore --verbosity minimal
+      - run: dotnet pack "$PLUGIN_PROJECT" --configuration Release --no-restore --output artifacts
       - name: Validate the tag and select the release package
         if: github.ref_type == 'tag' || inputs.version != ''
         shell: pwsh
@@ -46,8 +55,7 @@ jobs:
           git merge-base --is-ancestor HEAD origin/main
           if ($LASTEXITCODE) { throw 'Release tags must point to a commit on main.' }
 
-          $project = "$env:PLUGIN_ID.csproj"
-          $version = (dotnet msbuild $project -getProperty:PackageVersion).Trim()
+          $version = (dotnet msbuild $env:PLUGIN_PROJECT -getProperty:PackageVersion).Trim()
           if ($LASTEXITCODE) { throw 'Unable to read the package version.' }
           $tag = if ($env:PUBLISH_VERSION) { "v$env:PUBLISH_VERSION" } else { $env:GITHUB_REF_NAME }
           if ($tag -ne "v$version") { throw "Tag $tag does not match project version $version." }

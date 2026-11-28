@@ -1,0 +1,54 @@
+name: Plugin test matrix
+
+on:
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  test:
+    name: Build & test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    env:
+      NuGetPackageSourceCredentials_skycd: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - name: Build and run plugin tests
+        shell: pwsh
+        run: |
+          $pluginId = $env:GITHUB_REPOSITORY.Split('/')[-1]
+          $project = @("src/$pluginId/$pluginId.csproj", "$pluginId.csproj") |
+            Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+          if (-not $project) { throw "Plugin project not found for $pluginId." }
+
+          $tests = @(Get-ChildItem -Path . -Recurse -File -Filter '*.Tests.csproj' |
+            Sort-Object FullName)
+          if ($tests.Count -eq 0) {
+            dotnet build $project --configuration Release
+            exit $LASTEXITCODE
+          }
+
+          foreach ($suite in $tests) {
+            $results = Join-Path $env:RUNNER_TEMP "plugin-test-results/$($suite.BaseName)"
+            dotnet test $suite.FullName --configuration Release --results-directory $results --logger trx
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: plugin-tests-${{ matrix.os }}
+          path: ${{ runner.temp }}/plugin-test-results
+          if-no-files-found: ignore
